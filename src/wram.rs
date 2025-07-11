@@ -1,5 +1,5 @@
 pub struct WRam(Box<[u8; 0x2000]>);
-impl HRam {
+impl WRam {
     pub fn new() -> Self {
         Self(Box::new([0; 0x2000]))
     }
