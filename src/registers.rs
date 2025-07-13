@@ -48,4 +48,52 @@ impl Registers {
         self.h = (val >> 8) as u8;
         self.l = (val & 0xFF) as u8;
     }
+
+    pub fn zf(&self) -> bool {
+        (self.f & 0b_1000_0000) > 0
+    }
+
+    pub fn nf(&self) -> bool {
+        (self.f & 0b_0100_0000) > 0
+    }
+
+    pub fn hf(&self) -> bool {
+        (self.f & 0b_0010_0000) > 0
+    }
+
+    pub fn cf(&self) -> bool {
+        (self.f & 0b_0001_0000) > 0
+    }
+
+    pub fn set_zf(&mut self, flag: bool) {
+        if flag {
+            self.f |= 0b_1000_0000;
+        } else {
+            self.f &= 0b_0111_1111;
+        }
+    }
+
+    pub fn set_nf(&mut self, flag: bool) {
+        if flag {
+            self.f |= 0b_0100_0000;
+        } else {
+            self.f &= 0b_1011_1111;
+        }
+    }
+
+    pub fn set_hf(&mut self, flag: bool) {
+        if flag {
+            self.f |= 0b_0010_0000;
+        } else {
+            self.f &= 0b_1101_1111;
+        }
+    }
+
+    pub fn set_cf(&mut self, flag: bool) {
+        if flag {
+            self.f |= 0b_0001_0000;
+        } else {
+            self.f &= 0b_1110_1111;
+        }
+    }
 }
