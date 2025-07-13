@@ -33,7 +33,7 @@ impl Peripheral {
     pub fn write(&mut self, addr: u16, val: u8) {
         match addr {
             0xC000..=0xFDFF => self.wram.write(addr, val),
-            0xFF50 => self.wram.write(addr, val),
+            0xFF50 => self.bootrom.write(addr, val),
             0xFF80..=0xFFFE => self.hram.write(addr, val),
             _ => (),
         }
