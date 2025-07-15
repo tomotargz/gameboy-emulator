@@ -1,4 +1,5 @@
 mod bootrom;
+mod cpu;
 mod hram;
 mod peripherals;
 mod registers;

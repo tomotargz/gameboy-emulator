@@ -1,12 +1,12 @@
 use crate::{bootrom::Bootrom, hram::HRam, wram::WRam};
 
-pub struct Peripheral {
+pub struct Peripherals {
     bootrom: Bootrom,
     wram: WRam,
     hram: HRam,
 }
 
-impl Peripheral {
+impl Peripherals {
     pub fn new(bootrom: Bootrom) -> Self {
         Self {
             bootrom,
