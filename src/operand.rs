@@ -9,6 +9,7 @@ pub trait IO16<T: Copy> {
     fn write16(&mut self, bus: &mut Peripherals, dst: T, val: u16) -> Option<()>;
 }
 
+// 8 bit registers
 #[derive(Clone, Copy, Debug)]
 pub enum Reg8 {
     A,
@@ -21,6 +22,7 @@ pub enum Reg8 {
     L,
 }
 
+// 16 bit registers
 #[derive(Clone, Copy, Debug)]
 pub enum Reg16 {
     AF,
@@ -30,12 +32,15 @@ pub enum Reg16 {
     SP,
 }
 
+// 8 bit immediate value indicated by the program counter
 #[derive(Clone, Copy, Debug)]
 pub struct Imm8;
 
+// 16 bit immediate value indicated by the program counter
 #[derive(Clone, Copy, Debug)]
 pub struct Imm16;
 
+// Indirect addressing
 #[derive(Clone, Copy, Debug)]
 pub enum Indirect {
     BC,
@@ -46,6 +51,7 @@ pub enum Indirect {
     HLI,
 }
 
+// Direct addressing
 #[derive(Clone, Copy, Debug)]
 pub enum Direct8 {
     D,
@@ -53,12 +59,14 @@ pub enum Direct8 {
 }
 
 #[derive(Clone, Copy, Debug)]
+// 16-bit direct address
 pub struct Direct16;
 
 #[derive(Clone, Copy, Debug)]
+// Condition codes for conditional instructions
 pub enum Cond {
-    NZ,
-    Z,
-    NC,
-    C,
+    NZ, // Not Zero
+    Z,  // Zero
+    NC, // Not Carry
+    C,  // Carry
 }
