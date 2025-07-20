@@ -1,6 +1,8 @@
-use crate::operand::{IO8, IO16, Reg8, Reg16};
+use crate::operand::{IO8, IO16, Imm8, Reg8, Reg16};
 use crate::peripherals::Peripherals;
 use crate::registers::Registers;
+use std::sync::atomic::AtomicU8;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Default)]
 struct Ctx {
@@ -50,7 +52,7 @@ impl IO8<Reg8> for Cpu {
         })
     }
 
-    fn write8(&mut self, bus: &mut Peripherals, dst: Reg8, val: u8) -> Option<()> {
+    fn write8(&mut self, _: &mut Peripherals, dst: Reg8, val: u8) -> Option<()> {
         Some(match dst {
             Reg8::A => self.regs.a = val,
             Reg8::B => self.regs.b = val,
@@ -75,7 +77,7 @@ impl IO16<Reg16> for Cpu {
         })
     }
 
-    fn write16(&mut self, bus: &mut Peripherals, dst: Reg16, val: u16) -> Option<()> {
+    fn write16(&mut self, _: &mut Peripherals, dst: Reg16, val: u16) -> Option<()> {
         Some(match dst {
             Reg16::AF => self.regs.write_af(val),
             Reg16::BC => self.regs.write_bc(val),
@@ -83,5 +85,31 @@ impl IO16<Reg16> for Cpu {
             Reg16::HL => self.regs.write_hl(val),
             Reg16::SP => self.regs.sp = val,
         })
+    }
+}
+
+impl IO8<Imm8> for Cpu {
+    fn read8(&mut self, bus: &Peripherals, _: Imm8) -> Option<u8> {
+        static STEP: AtomicU8 = AtomicU8::new(0);
+        static VAL8: AtomicU8 = AtomicU8::new(0);
+        match STEP.load(Relaxed) {
+            0 => {
+                VAL8.store(bus.read(self.regs.pc), Relaxed);
+                self.regs.pc = self.regs.pc.wrapping_add(1);
+                STEP.fetch_add(1, Relaxed);
+                None
+            }
+            1 => {
+                STEP.store(0, Relaxed);
+                Some(VAL8.load(Relaxed))
+            }
+            _ => {
+                unreachable!()
+            }
+        }
+    }
+
+    fn write8(&mut self, _: &mut Peripherals, _: Imm8, _: u8) -> Option<()> {
+        unreachable!()
     }
 }
