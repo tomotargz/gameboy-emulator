@@ -1,8 +1,9 @@
+use crate::instructions::{go, step};
 use crate::operand::{IO8, IO16, Imm8, Reg8, Reg16};
 use crate::peripherals::Peripherals;
 use crate::registers::Registers;
-use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::Relaxed;
+use std::sync::atomic::{AtomicU8, AtomicU16};
 
 #[derive(Default)]
 struct Ctx {
@@ -90,23 +91,18 @@ impl IO16<Reg16> for Cpu {
 
 impl IO8<Imm8> for Cpu {
     fn read8(&mut self, bus: &Peripherals, _: Imm8) -> Option<u8> {
-        static STEP: AtomicU8 = AtomicU8::new(0);
-        static VAL8: AtomicU8 = AtomicU8::new(0);
-        match STEP.load(Relaxed) {
-            0 => {
+        step!(None, {
+            0: {
                 VAL8.store(bus.read(self.regs.pc), Relaxed);
                 self.regs.pc = self.regs.pc.wrapping_add(1);
-                STEP.fetch_add(1, Relaxed);
-                None
-            }
-            1 => {
-                STEP.store(0, Relaxed);
-                Some(VAL8.load(Relaxed))
-            }
-            _ => {
-                unreachable!()
-            }
-        }
+                go!(1);
+                return None;
+            },
+            1: {
+                go!(0);
+                return Some(VAL8.load(Relaxed));
+            },
+        });
     }
 
     fn write8(&mut self, _: &mut Peripherals, _: Imm8, _: u8) -> Option<()> {
