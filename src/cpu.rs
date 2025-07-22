@@ -1,5 +1,5 @@
 use crate::instructions::{go, step};
-use crate::operand::{IO8, IO16, Imm8, Reg8, Reg16};
+use crate::operand::{IO8, IO16, Imm8, Imm16, Reg8, Reg16};
 use crate::peripherals::Peripherals;
 use crate::registers::Registers;
 use std::sync::atomic::Ordering::Relaxed;
@@ -106,6 +106,29 @@ impl IO8<Imm8> for Cpu {
     }
 
     fn write8(&mut self, _: &mut Peripherals, _: Imm8, _: u8) -> Option<()> {
+        unreachable!()
+    }
+}
+
+impl IO16<Imm16> for Cpu {
+    fn read16(&mut self, bus: &Peripherals, _: Imm16) -> Option<u16> {
+        step!(None, {
+            0: if let Some(lo) = self.read8(bus, Imm8) {
+                VAL8.store(lo, Relaxed);
+                go!(1);
+            },
+            1: if let Some(hi) = self.read8(bus, Imm8) {
+                VAL16.store(u16::from_le_bytes([VAL8.load(Relaxed), hi]), Relaxed);
+                go!(2);
+            },
+            2: {
+                go!(0);
+                return Some(VAL16.load(Relaxed));
+            },
+        });
+    }
+
+    fn write16(&mut self, _: &mut Peripherals, _: Imm16, _: u16) -> Option<()> {
         unreachable!()
     }
 }
