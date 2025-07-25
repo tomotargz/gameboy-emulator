@@ -5,6 +5,8 @@ use crate::registers::Registers;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::atomic::{AtomicU8, AtomicU16};
 
+mod instructions;
+
 #[derive(Default)]
 struct Ctx {
     opcode: u8,
