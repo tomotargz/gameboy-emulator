@@ -1,5 +1,5 @@
 use crate::instructions::{go, step};
-use crate::operand::{Direct16, Direct8, Imm16, Imm8, Indirect, Reg16, Reg8, IO16, IO8};
+use crate::operand::{Direct8, Direct16, IO8, IO16, Imm8, Imm16, Indirect, Reg8, Reg16};
 use crate::peripherals::Peripherals;
 use crate::registers::Registers;
 use std::sync::atomic::Ordering::Relaxed;
