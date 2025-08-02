@@ -1,7 +1,7 @@
 use crate::{
     cpu::Cpu,
     instructions::{go, step},
-    operand::{IO8, IO16, Reg16},
+    operand::{Cond, IO8, IO16, Imm8, Reg16},
     peripherals::Peripherals,
 };
 
@@ -239,5 +239,43 @@ impl Cpu {
             self.write16(bus, dst, v);
             self.fetch(bus);
         }
+    }
+
+    pub fn jr(&mut self, bus: &Peripherals) {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, Imm8){
+                self.regs.pc = self.regs.pc.wrapping_add(v as i8 as u16);
+                return go!(1);
+            },
+            1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    fn cond(&self, cond: Cond) -> bool {
+        match cond {
+            Cond::NZ => !self.regs.zf(),
+            Cond::Z => self.regs.zf(),
+            Cond::NC => !self.regs.cf(),
+            Cond::C => self.regs.cf(),
+        }
+    }
+
+    pub fn jr_c(&mut self, bus: &Peripherals, c: Cond) {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, Imm8) {
+                go!(1);
+                if self.cond(c) {
+                    self.regs.pc = self.regs.pc.wrapping_add(v as i8 as u16);
+                    return;
+                }
+            },
+            1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
     }
 }
