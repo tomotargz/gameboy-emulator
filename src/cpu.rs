@@ -43,12 +43,31 @@ impl Cpu {
                 0x04 => self.inc(bus, Reg8::B),
                 0x05 => self.dec(bus, Reg8::B),
                 0x06 => self.ld(bus, Reg8::B, Imm8),
+                // 0x07
                 0x08 => self.ld16(bus, Direct16, Reg16::SP),
+                // 0x09
                 0x0a => self.ld(bus, Reg8::A, Indirect::BC),
                 0x0b => self.dec16(bus, Reg16::BC),
                 0x0c => self.inc(bus, Reg8::C),
                 0x0d => self.dec(bus, Reg8::C),
                 0x0e => self.ld(bus, Reg8::C, Imm8),
+                // 0x0f
+                // 0x10
+                0x11 => self.ld16(bus, Reg16::DE, Imm16),
+                0x12 => self.ld(bus, Indirect::DE, Reg8::A),
+                0x13 => self.inc16(bus, Reg16::DE),
+                0x14 => self.inc(bus, Reg8::D),
+                0x15 => self.dec(bus, Reg8::D),
+                0x16 => self.ld(bus, Reg8::D, Imm8),
+                // 0x17
+                0x18 => self.jr(bus),
+                // 0x19
+                0x1a => self.ld(bus, Reg8::A, Indirect::DE),
+                0x1b => self.dec16(bus, Reg16::DE),
+                0x1c => self.inc(bus, Reg8::E),
+                0x1d => self.dec(bus, Reg8::E),
+                0x1e => self.ld(bus, Reg8::E, Imm8),
+                // 0x1f
                 _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
             }
         }
