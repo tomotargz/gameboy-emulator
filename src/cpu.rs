@@ -1,5 +1,5 @@
 use crate::instructions::{go, step};
-use crate::operand::{Direct8, Direct16, IO8, IO16, Imm8, Imm16, Indirect, Reg8, Reg16};
+use crate::operand::{Cond, Direct8, Direct16, IO8, IO16, Imm8, Imm16, Indirect, Reg8, Reg16};
 use crate::peripherals::Peripherals;
 use crate::registers::Registers;
 use std::sync::atomic::Ordering::Relaxed;
@@ -68,6 +68,22 @@ impl Cpu {
                 0x1d => self.dec(bus, Reg8::E),
                 0x1e => self.ld(bus, Reg8::E, Imm8),
                 // 0x1f
+                0x20 => self.jr_c(bus, Cond::NZ),
+                0x21 => self.ld16(bus, Reg16::HL, Imm16),
+                0x22 => self.ld(bus, Indirect::HLI, Reg8::A),
+                0x23 => self.inc16(bus, Reg16::HL),
+                0x24 => self.inc(bus, Reg8::H),
+                0x25 => self.dec(bus, Reg8::H),
+                0x26 => self.ld(bus, Reg8::H, Imm8),
+                // 0x27
+                0x28 => self.jr_c(bus, Cond::Z),
+                // 0x29
+                0x2a => self.ld(bus, Reg8::A, Indirect::HLI),
+                0x2b => self.dec16(bus, Reg16::HL),
+                0x2c => self.inc(bus, Reg8::L),
+                0x2d => self.dec(bus, Reg8::L),
+                0x2e => self.ld(bus, Reg8::L, Imm8),
+                // 0x2f
                 _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
             }
         }
