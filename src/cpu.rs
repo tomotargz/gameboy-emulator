@@ -19,7 +19,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn emulate_cycle(&mut self, bus: &Peripherals) {
+    pub fn emulate_cycle(&mut self, bus: &mut Peripherals) {
         self.decode(bus);
     }
 
@@ -29,10 +29,28 @@ impl Cpu {
         self.ctx.cb = false;
     }
 
-    pub fn decode(&mut self, bus: &Peripherals) {
-        match self.ctx.opcode {
-            0x00 => self.nop(bus),
-            _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
+    pub fn decode(&mut self, bus: &mut Peripherals) {
+        if self.ctx.cb {
+            match self.ctx.opcode {
+                _ => panic!("Not implemented: cb{:02x}", self.ctx.opcode),
+            }
+        } else {
+            match self.ctx.opcode {
+                0x00 => self.nop(bus),
+                0x01 => self.ld16(bus, Reg16::BC, Imm16),
+                0x02 => self.ld(bus, Indirect::BC, Reg8::A),
+                0x03 => self.inc16(bus, Reg16::BC),
+                0x04 => self.inc(bus, Reg8::B),
+                0x05 => self.dec(bus, Reg8::B),
+                0x06 => self.ld(bus, Reg8::B, Imm8),
+                0x08 => self.ld16(bus, Direct16, Reg16::SP),
+                0x0a => self.ld(bus, Reg8::A, Indirect::BC),
+                0x0b => self.dec16(bus, Reg16::BC),
+                0x0c => self.inc(bus, Reg8::C),
+                0x0d => self.dec(bus, Reg8::C),
+                0x0e => self.ld(bus, Reg8::C, Imm8),
+                _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
+            }
         }
     }
 
