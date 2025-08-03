@@ -1,7 +1,7 @@
 use crate::{
     cpu::Cpu,
     instructions::{go, step},
-    operand::{Cond, Imm16, Imm8, Reg16, IO16, IO8},
+    operand::{Cond, IO8, IO16, Imm8, Imm16, Reg16},
     peripherals::Peripherals,
 };
 
@@ -287,6 +287,19 @@ impl Cpu {
             },
             1: if self.push16(bus, self.regs.pc).is_some() {
                 self.regs.pc = VAL16.load(Relaxed);
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn ret(&mut self, bus: &Peripherals) {
+        step!((), {
+            0: if let Some(v) = self.pop16(bus) {
+                self.regs.pc = v;
+                return go!(1);
+            },
+            1: {
                 go!(0);
                 self.fetch(bus);
             },
