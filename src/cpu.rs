@@ -180,8 +180,33 @@ impl Cpu {
                 0xbd => self.cp(bus, Reg8::L),
                 0xbe => self.cp(bus, Indirect::HL),
                 0xbf => self.cp(bus, Reg8::A),
+                // 0xc0
+                0xc1 => self.pop(bus, Reg16::BC),
+                // 0xc2
+                // 0xc3
+                // 0xc4
+                0xc5 => self.push(bus, Reg16::BC),
+                // 0xc6
+                // 0xc7
+                // 0xc8
+                0xc9 => self.ret(bus),
+                // 0xca
+                0xcb => self.cb_prefixed(bus),
+                // 0xcc
+                0xcd => self.call(bus),
+                // 0xce
+                // 0xcf
                 _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
             }
+        }
+    }
+
+    // あやしい
+    fn cb_prefixed(&mut self, bus: &mut Peripherals) {
+        if let Some(v) = self.read8(bus, Imm8) {
+            self.ctx.opcode = v;
+            self.ctx.cb = true;
+            self.decode(bus);
         }
     }
 
