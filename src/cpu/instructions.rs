@@ -279,7 +279,7 @@ impl Cpu {
         });
     }
 
-    pub fn call(&mut self, bus: &Peripherals) {
+    pub fn call(&mut self, bus: &mut Peripherals) {
         step!((), {
             0: if let Some(v) = self.read16(bus, Imm16) {
                 VAL16.store(v, Relaxed);
