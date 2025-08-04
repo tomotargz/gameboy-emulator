@@ -196,6 +196,54 @@ impl Cpu {
                 0xcd => self.call(bus),
                 // 0xce
                 // 0xcf
+                // 0xd0
+                0xd1 => self.pop(bus, Reg16::DE),
+                // 0xd2
+                // 0xd3
+                // 0xd4
+                0xd5 => self.push(bus, Reg16::DE),
+                // 0xd6
+                // 0xd7
+                // 0xd8
+                // 0xd9
+                // 0xda
+                // 0xdb
+                // 0xdc
+                // 0xdd
+                // 0xde
+                // 0xdf
+                0xe0 => self.ld(bus, Direct8::DFF, Reg8::A),
+                0xe1 => self.pop(bus, Reg16::HL),
+                0xe2 => self.ld(bus, Indirect::CFF, Reg8::A),
+                // 0xe3
+                // 0xe4
+                0xe5 => self.push(bus, Reg16::HL),
+                // 0xe6
+                // 0xe7
+                // 0xe8
+                // 0xe9
+                0xea => self.ld(bus, Direct8::D, Reg8::A),
+                // 0xeb
+                // 0xec
+                // 0xed
+                // 0xee
+                // 0xef
+                0xf0 => self.ld(bus, Reg8::A, Direct8::DFF),
+                0xf1 => self.pop(bus, Reg16::AF),
+                0xf2 => self.ld(bus, Reg8::A, Indirect::CFF),
+                // 0xf3
+                // 0xf4
+                0xf5 => self.push(bus, Reg16::AF),
+                // 0xf6
+                // 0xf7
+                // 0xf8
+                // 0xf9
+                0xfa => self.ld(bus, Reg8::A, Direct8::D),
+                // 0xfb
+                // 0xfc
+                // 0xfd
+                0xfe => self.cp(bus, Imm8),
+                // 0xff
                 _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
             }
         }
