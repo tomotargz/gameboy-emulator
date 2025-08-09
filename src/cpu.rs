@@ -41,7 +41,6 @@ impl Cpu {
             self.cb_decode(bus);
             return;
         }
-        println!("opcode:{:02x}", self.ctx.opcode);
         match self.ctx.opcode {
             0x00 => self.nop(bus),
             0x01 => self.ld16(bus, Reg16::BC, Imm16),
@@ -256,7 +255,6 @@ impl Cpu {
     }
 
     pub fn cb_decode(&mut self, bus: &mut Peripherals) {
-        println!("opcode:{:02x}(cb)", self.ctx.opcode);
         match self.ctx.opcode {
             0x10 => self.rl(bus, Reg8::B),
             0x11 => self.rl(bus, Reg8::C),

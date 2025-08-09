@@ -32,9 +32,9 @@ impl LCD {
         let mut texture = texture_creator
             .create_texture_streaming(PixelFormatEnum::RGB24, LCD_WIDTH as u32, LCD_HEIGHT as u32)
             .expect("failed to create texture streaming");
-        texture.update(None, &pixels, 480).unwrap();
+        texture.update(None, &pixels, 480).expect("failed to update texture");
         self.canvas.clear();
-        self.canvas.copy(&texture, None, None).unwrap();
+        self.canvas.copy(&texture, None, None).expect("failed to copy canvas");
         self.canvas.present();
     }
 }
