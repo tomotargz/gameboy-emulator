@@ -7,6 +7,7 @@ mod peripherals;
 mod ppu;
 mod registers;
 mod wram;
+mod lcd;
 
 fn main() {
     println!("Hello, world!");
