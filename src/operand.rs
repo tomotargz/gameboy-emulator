@@ -17,7 +17,6 @@ pub enum Reg8 {
     C,
     D,
     E,
-    F,
     H,
     L,
 }

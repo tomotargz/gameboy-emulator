@@ -36,17 +36,17 @@ impl Registers {
 
     pub fn write_bc(&mut self, val: u16) {
         self.b = (val >> 8) as u8;
-        self.c = (val & 0xFF) as u8;
+        self.c = val as u8;
     }
 
     pub fn write_de(&mut self, val: u16) {
         self.d = (val >> 8) as u8;
-        self.e = (val & 0xFF) as u8;
+        self.e = val as u8;
     }
 
     pub fn write_hl(&mut self, val: u16) {
         self.h = (val >> 8) as u8;
-        self.l = (val & 0xFF) as u8;
+        self.l = val as u8;
     }
 
     pub fn zf(&self) -> bool {

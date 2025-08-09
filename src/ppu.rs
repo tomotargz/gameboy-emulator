@@ -1,3 +1,5 @@
+use std::iter;
+
 #[derive(Copy, Clone, PartialEq, Eq)]
 enum Mode {
     HBlank = 0,
@@ -62,7 +64,7 @@ impl Ppu {
             vram: Box::new([0; 0x2000]),
             oam: Box::new([0; 0xA0]),
             buffer: Box::new([0; LCD_PIXELS * 4]),
-            cycles: 0,
+            cycles: 20,
         }
     }
 
@@ -221,5 +223,12 @@ impl Ppu {
             }
         }
         ret
+    }
+
+    pub fn pixel_buffer(&self) -> Box<[u8]> {
+        self.buffer
+            .iter()
+            .flat_map(|&e| iter::repeat(e.into()).take(3))
+            .collect::<Box<[u8]>>()
     }
 }

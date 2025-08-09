@@ -73,7 +73,7 @@ impl Cpu {
                 VAL8.store(result, Relaxed);
                 go!(1);
             },
-            1: if self.write8(bus, src,VAL8.load(Relaxed)).is_some() {
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
                 go!(0);
                 self.fetch(bus);
             },
@@ -107,12 +107,12 @@ impl Cpu {
             0: if let Some(v) = self.read8(bus, src) {
                 let result = v.wrapping_sub(1);
                 self.regs.set_zf(result == 0);
-                self.regs.set_nf(false);
-                self.regs.set_hf(v & 0xf == 0xf);
+                self.regs.set_nf(true);
+                self.regs.set_hf(v & 0xf == 0);
                 VAL8.store(result, Relaxed);
                 go!(1);
             },
-            1: if self.write8(bus, src,VAL8.load(Relaxed)).is_some() {
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
                 go!(0);
                 self.fetch(bus);
             },

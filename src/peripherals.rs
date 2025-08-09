@@ -4,7 +4,7 @@ pub struct Peripherals {
     bootrom: Bootrom,
     wram: WRam,
     hram: HRam,
-    ppu: Ppu,
+    pub ppu: Ppu,
 }
 
 impl Peripherals {

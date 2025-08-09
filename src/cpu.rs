@@ -19,6 +19,13 @@ pub struct Cpu {
 }
 
 impl Cpu {
+    pub fn new() -> Self {
+        Cpu {
+            regs: Registers::default(),
+            ctx: Ctx::default(),
+        }
+    }
+
     pub fn emulate_cycle(&mut self, bus: &mut Peripherals) {
         self.decode(bus);
     }
@@ -34,6 +41,7 @@ impl Cpu {
             self.cb_decode(bus);
             return;
         }
+        println!("opcode:{:02x}", self.ctx.opcode);
         match self.ctx.opcode {
             0x00 => self.nop(bus),
             0x01 => self.ld16(bus, Reg16::BC, Imm16),
@@ -248,88 +256,8 @@ impl Cpu {
     }
 
     pub fn cb_decode(&mut self, bus: &mut Peripherals) {
+        println!("opcode:{:02x}(cb)", self.ctx.opcode);
         match self.ctx.opcode {
-            0x10 => self.rl(bus, Reg8::B),
-            0x11 => self.rl(bus, Reg8::C),
-            0x12 => self.rl(bus, Reg8::D),
-            0x13 => self.rl(bus, Reg8::E),
-            0x14 => self.rl(bus, Reg8::H),
-            0x15 => self.rl(bus, Reg8::L),
-            0x16 => self.rl(bus, Indirect::HL),
-            0x17 => self.rl(bus, Reg8::A),
-            // 0x18
-            // 0x19
-            // 0x1a
-            // 0x1b
-            // 0x1c
-            // 0x1d
-            // 0x1e
-            // 0x1f
-            0x40 => self.bit(bus, 0, Reg8::B),
-            0x41 => self.bit(bus, 0, Reg8::C),
-            0x42 => self.bit(bus, 0, Reg8::D),
-            0x43 => self.bit(bus, 0, Reg8::E),
-            0x44 => self.bit(bus, 0, Reg8::H),
-            0x45 => self.bit(bus, 0, Reg8::L),
-            0x46 => self.bit(bus, 0, Indirect::HL),
-            0x47 => self.bit(bus, 0, Reg8::A),
-            0x48 => self.bit(bus, 1, Reg8::B),
-            0x49 => self.bit(bus, 1, Reg8::C),
-            0x4a => self.bit(bus, 1, Reg8::D),
-            0x4b => self.bit(bus, 1, Reg8::E),
-            0x4c => self.bit(bus, 1, Reg8::H),
-            0x4d => self.bit(bus, 1, Reg8::L),
-            0x4e => self.bit(bus, 1, Indirect::HL),
-            0x4f => self.bit(bus, 1, Reg8::A),
-            0x50 => self.bit(bus, 2, Reg8::B),
-            0x51 => self.bit(bus, 2, Reg8::C),
-            0x52 => self.bit(bus, 2, Reg8::D),
-            0x53 => self.bit(bus, 2, Reg8::E),
-            0x54 => self.bit(bus, 2, Reg8::H),
-            0x55 => self.bit(bus, 2, Reg8::L),
-            0x56 => self.bit(bus, 2, Indirect::HL),
-            0x57 => self.bit(bus, 2, Reg8::A),
-            0x58 => self.bit(bus, 3, Reg8::B),
-            0x59 => self.bit(bus, 3, Reg8::C),
-            0x5a => self.bit(bus, 3, Reg8::D),
-            0x5b => self.bit(bus, 3, Reg8::E),
-            0x5c => self.bit(bus, 3, Reg8::H),
-            0x5d => self.bit(bus, 3, Reg8::L),
-            0x5e => self.bit(bus, 3, Indirect::HL),
-            0x5f => self.bit(bus, 3, Reg8::A),
-            0x60 => self.bit(bus, 4, Reg8::B),
-            0x61 => self.bit(bus, 4, Reg8::C),
-            0x62 => self.bit(bus, 4, Reg8::D),
-            0x63 => self.bit(bus, 4, Reg8::E),
-            0x64 => self.bit(bus, 4, Reg8::H),
-            0x65 => self.bit(bus, 4, Reg8::L),
-            0x66 => self.bit(bus, 4, Indirect::HL),
-            0x67 => self.bit(bus, 4, Reg8::A),
-            0x68 => self.bit(bus, 5, Reg8::B),
-            0x69 => self.bit(bus, 5, Reg8::C),
-            0x6a => self.bit(bus, 5, Reg8::D),
-            0x6b => self.bit(bus, 5, Reg8::E),
-            0x6c => self.bit(bus, 5, Reg8::H),
-            0x6d => self.bit(bus, 5, Reg8::L),
-            0x6e => self.bit(bus, 5, Indirect::HL),
-            0x6f => self.bit(bus, 5, Reg8::A),
-            0x70 => self.bit(bus, 6, Reg8::B),
-            0x71 => self.bit(bus, 6, Reg8::C),
-            0x72 => self.bit(bus, 6, Reg8::D),
-            0x73 => self.bit(bus, 6, Reg8::E),
-            0x74 => self.bit(bus, 6, Reg8::H),
-            0x75 => self.bit(bus, 6, Reg8::L),
-            0x76 => self.bit(bus, 6, Indirect::HL),
-            0x77 => self.bit(bus, 6, Reg8::A),
-            0x78 => self.bit(bus, 7, Reg8::B),
-            0x79 => self.bit(bus, 7, Reg8::C),
-            0x7a => self.bit(bus, 7, Reg8::D),
-            0x7b => self.bit(bus, 7, Reg8::E),
-            0x7c => self.bit(bus, 7, Reg8::H),
-            0x7d => self.bit(bus, 7, Reg8::L),
-            0x7e => self.bit(bus, 7, Indirect::HL),
-            0x7f => self.bit(bus, 7, Reg8::A),
-            _ => panic!("Not implemented: cb{:02x}", self.ctx.opcode),
             0x10 => self.rl(bus, Reg8::B),
             0x11 => self.rl(bus, Reg8::C),
             0x12 => self.rl(bus, Reg8::D),
@@ -436,7 +364,6 @@ impl IO8<Reg8> for Cpu {
             Reg8::C => self.regs.c,
             Reg8::D => self.regs.d,
             Reg8::E => self.regs.e,
-            Reg8::F => self.regs.f,
             Reg8::H => self.regs.h,
             Reg8::L => self.regs.l,
         })
@@ -449,7 +376,6 @@ impl IO8<Reg8> for Cpu {
             Reg8::C => self.regs.c = val,
             Reg8::D => self.regs.d = val,
             Reg8::E => self.regs.e = val,
-            Reg8::F => self.regs.f = val,
             Reg8::H => self.regs.h = val,
             Reg8::L => self.regs.l = val,
         })
@@ -531,16 +457,16 @@ impl IO8<Indirect> for Cpu {
                         Indirect::BC => bus.read(self.regs.bc()),
                         Indirect::DE => bus.read(self.regs.de()),
                         Indirect::HL => bus.read(self.regs.hl()),
-                        Indirect::CFF => bus.read(0xFF00 | (self.regs.c) as u16),
+                        Indirect::CFF => bus.read(0xFF00 | (self.regs.c as u16)),
                         Indirect::HLD => {
-                            let hl = self.regs.hl();
-                            self.regs.write_hl(hl.wrapping_sub(1));
-                            bus.read(hl)
+                            let addr = self.regs.hl();
+                            self.regs.write_hl(addr.wrapping_sub(1));
+                            bus.read(addr)
                         },
                         Indirect::HLI => {
-                            let hl = self.regs.hl();
-                            self.regs.write_hl(hl.wrapping_add(1));
-                            bus.read(hl)
+                            let addr = self.regs.hl();
+                            self.regs.write_hl(addr.wrapping_add(1));
+                            bus.read(addr)
                         },
                     }, Relaxed);
                 go!(1);
@@ -562,16 +488,16 @@ impl IO8<Indirect> for Cpu {
                     Indirect::HL => bus.write(self.regs.hl(), val),
                     Indirect::CFF => bus.write(0xFF00 | (self.regs.c as u16), val),
                     Indirect::HLD => {
-                        let hl = self.regs.hl();
-                        self.regs.write_hl(hl.wrapping_sub(1));
-                        bus.write(hl, val);
+                        let addr = self.regs.hl();
+                        self.regs.write_hl(addr.wrapping_sub(1));
+                        bus.write(addr, val);
                     },
                     Indirect::HLI => {
-                        let hl = self.regs.hl();
-                        self.regs.write_hl(hl.wrapping_add(1));
-                        bus.write(hl, val);
+                        let addr = self.regs.hl();
+                        self.regs.write_hl(addr.wrapping_add(1));
+                        bus.write(addr, val);
                     },
-                };
+                }
                 go!(1);
                 return None;
             },
@@ -641,7 +567,6 @@ impl IO16<Direct16> for Cpu {
             0: if let Some(lo) = self.read8(bus, Imm8) {
                 VAL8.store(lo, Relaxed);
                 go!(1);
-                // なぜstep0とstep1にreturnがない？
             },
             1: if let Some(hi) = self.read8(bus, Imm8) {
                 VAL16.store(u16::from_le_bytes([VAL8.load(Relaxed), hi]), Relaxed);
