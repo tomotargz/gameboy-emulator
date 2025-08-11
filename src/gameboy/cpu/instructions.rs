@@ -1,13 +1,42 @@
-use crate::{
-    cpu::Cpu,
-    instructions::{go, step},
+use super::{
+    super::peripherals::Peripherals,
+    Cpu,
     operand::{Cond, IO8, IO16, Imm8, Imm16, Reg16},
-    peripherals::Peripherals,
 };
+use ::std::sync::atomic::{AtomicU8, AtomicU16, Ordering::Relaxed};
 
-use std::sync::atomic::{AtomicU8, AtomicU16, Ordering::Relaxed};
+macro_rules! step {
+    ($d:expr, {$($c:tt : $e:expr,)*}) => {
+        static STEP: AtomicU8 = AtomicU8::new(0);
+        #[allow(dead_code)]
+        static VAL8: AtomicU8 = AtomicU8::new(0);
+        #[allow(dead_code)]
+        static VAL16: AtomicU16 = AtomicU16::new(0);
+        $(if STEP.load(Relaxed) == $c {$e})* else { return $d; }
+    };
+}
+pub(crate) use step;
+
+macro_rules! go {
+    ($e:expr) => {
+        STEP.store($e, Relaxed)
+    };
+}
+pub(crate) use go;
 
 impl Cpu {
+    pub fn cb_prefixed(&mut self, bus: &mut Peripherals) {
+        if let Some(v) = self.read8(bus, Imm8) {
+            self.ctx.opcode = v;
+            self.ctx.cb = true;
+            self.cb_decode(bus);
+        }
+    }
+
+    pub fn nop(&mut self, bus: &Peripherals) {
+        self.fetch(bus);
+    }
+
     pub fn ld<D: Copy, S: Copy>(&mut self, bus: &mut Peripherals, dst: D, src: S)
     where
         Self: IO8<D> + IO8<S>,

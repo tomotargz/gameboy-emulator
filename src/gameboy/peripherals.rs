@@ -1,4 +1,13 @@
-use crate::{bootrom::Bootrom, hram::HRam, ppu::Ppu, wram::WRam};
+mod bootrom;
+mod hram;
+mod ppu;
+mod wram;
+
+use ::sdl2::Sdl;
+pub use bootrom::Bootrom;
+use hram::HRam;
+use ppu::Ppu;
+use wram::WRam;
 
 pub struct Peripherals {
     bootrom: Bootrom,
@@ -8,12 +17,12 @@ pub struct Peripherals {
 }
 
 impl Peripherals {
-    pub fn new(bootrom: Bootrom) -> Self {
+    pub fn new(bootrom: Bootrom, sdl: &Sdl) -> Self {
         Self {
             bootrom,
             wram: WRam::new(),
             hram: HRam::new(),
-            ppu: Ppu::new(),
+            ppu: Ppu::new(sdl),
         }
     }
 

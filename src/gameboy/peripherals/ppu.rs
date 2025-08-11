@@ -1,4 +1,8 @@
-use std::iter;
+mod lcd;
+
+use self::lcd::Lcd;
+use ::sdl2::Sdl;
+use ::std::iter;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 enum Mode {
@@ -44,10 +48,11 @@ pub struct Ppu {
     oam: Box<[u8; 0xA0]>,
     buffer: Box<[u8; LCD_PIXELS * 4]>,
     cycles: u8,
+    lcd: lcd::Lcd,
 }
 
 impl Ppu {
-    pub fn new() -> Self {
+    pub fn new(sdl: &Sdl) -> Self {
         Self {
             mode: Mode::OamScan,
             lcdc: 0,
@@ -65,6 +70,7 @@ impl Ppu {
             oam: Box::new([0; 0xA0]),
             buffer: Box::new([0; LCD_PIXELS * 4]),
             cycles: 20,
+            lcd: Lcd::new(sdl, 4),
         }
     }
 
@@ -177,17 +183,16 @@ impl Ppu {
         }
     }
 
-    pub fn emulate_cycle(&mut self) -> bool {
+    pub fn emulate_cycle(&mut self) {
         if self.lcdc & PPU_ENABLE == 0 {
-            return false;
+            return;
         }
 
         self.cycles -= 1;
         if self.cycles > 0 {
-            return false;
+            return;
         }
 
-        let mut ret = false;
         match self.mode {
             Mode::HBlank => {
                 self.ly += 1;
@@ -203,10 +208,10 @@ impl Ppu {
             Mode::VBlank => {
                 self.ly += 1;
                 if self.ly > 153 {
-                    ret = true;
                     self.ly = 0;
                     self.mode = Mode::OamScan;
                     self.cycles = 20;
+                    self.lcd.draw(self.pixel_buffer());
                 } else {
                     self.cycles = 114;
                 }
@@ -222,10 +227,9 @@ impl Ppu {
                 self.cycles = 51;
             }
         }
-        ret
     }
 
-    pub fn pixel_buffer(&self) -> Box<[u8]> {
+    fn pixel_buffer(&self) -> Box<[u8]> {
         self.buffer
             .iter()
             .flat_map(|&e| iter::repeat(e.into()).take(3))

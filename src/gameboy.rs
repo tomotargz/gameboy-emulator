@@ -1,6 +1,12 @@
-use crate::{bootrom::Bootrom, cpu::Cpu, lcd::LCD, peripherals::Peripherals};
-use sdl2::{self, Sdl, event::Event};
-use std::time;
+mod cpu;
+mod peripherals;
+
+pub use peripherals::Bootrom;
+
+use ::std::time;
+use cpu::Cpu;
+use peripherals::Peripherals;
+use sdl2::{Sdl, event::Event};
 
 const CPU_CLOCK_HZ: u128 = 4_194_304;
 const M_CYCLE_CLOCK: u128 = 4;
@@ -9,7 +15,6 @@ const M_CYCLE_NANOS: u128 = M_CYCLE_CLOCK * 1_000_000_000 / CPU_CLOCK_HZ;
 pub struct GameBoy {
     cpu: Cpu,
     peripherals: Peripherals,
-    lcd: LCD,
     sdl: Sdl,
 }
 
@@ -17,12 +22,10 @@ impl GameBoy {
     pub fn new(bootrom: Bootrom) -> Self {
         let cpu = Cpu::new();
         let sdl = sdl2::init().expect("failed to initialize SDL");
-        let lcd = LCD::new(&sdl, 4);
-        let peripherals = Peripherals::new(bootrom);
+        let peripherals = Peripherals::new(bootrom, &sdl);
         Self {
             cpu,
             sdl,
-            lcd,
             peripherals,
         }
     }
@@ -41,9 +44,7 @@ impl GameBoy {
                     }
                 }
                 self.cpu.emulate_cycle(&mut self.peripherals);
-                if self.peripherals.ppu.emulate_cycle() {
-                    self.lcd.draw(self.peripherals.ppu.pixel_buffer());
-                }
+                self.peripherals.ppu.emulate_cycle();
                 emulated += M_CYCLE_NANOS;
             }
         }
