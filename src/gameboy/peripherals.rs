@@ -1,9 +1,10 @@
 mod bootrom;
 mod hram;
-mod mbc;
+pub mod mbc;
 mod ppu;
 mod wram;
 
+use super::cartridge::Cartridge;
 use ::sdl2::Sdl;
 pub use bootrom::Bootrom;
 use hram::HRam;
@@ -15,15 +16,17 @@ pub struct Peripherals {
     wram: WRam,
     hram: HRam,
     pub ppu: Ppu,
+    cartridge: Cartridge,
 }
 
 impl Peripherals {
-    pub fn new(bootrom: Bootrom, sdl: &Sdl) -> Self {
+    pub fn new(bootrom: Bootrom, cartridge: Cartridge, sdl: &Sdl) -> Self {
         Self {
             bootrom,
             wram: WRam::new(),
             hram: HRam::new(),
             ppu: Ppu::new(sdl),
+            cartridge,
         }
     }
 
@@ -33,13 +36,15 @@ impl Peripherals {
                 if self.bootrom.is_active() {
                     self.bootrom.read(addr)
                 } else {
-                    0xFF
+                    self.cartridge.read(addr)
                 }
             }
+            0x0100..=0x7FFF => self.cartridge.read(addr),
             0x8000..=0x9FFF => self.ppu.read(addr),
+            0xA000..=0xBFFF => self.cartridge.read(addr),
+            0xC000..=0xFDFF => self.wram.read(addr),
             0xFE00..=0xFE9F => self.ppu.read(addr),
             0xFF40..=0xFF4B => self.ppu.read(addr),
-            0xC000..=0xFDFF => self.wram.read(addr),
             0xFF80..=0xFFFF => self.hram.read(addr),
             _ => 0xFF,
         }
@@ -47,10 +52,17 @@ impl Peripherals {
 
     pub fn write(&mut self, addr: u16, val: u8) {
         match addr {
+            0x0000..=0x00FF => {
+                if !self.bootrom.is_active() {
+                    self.cartridge.write(addr, val)
+                }
+            }
+            0x0100..=0x7FFF => self.cartridge.write(addr, val),
             0x8000..=0x9FFF => self.ppu.write(addr, val),
+            0xA000..=0xBFFF => self.cartridge.write(addr, val),
+            0xC000..=0xFDFF => self.wram.write(addr, val),
             0xFE00..=0xFE9F => self.ppu.write(addr, val),
             0xFF40..=0xFF4B => self.ppu.write(addr, val),
-            0xC000..=0xFDFF => self.wram.write(addr, val),
             0xFF50 => self.bootrom.write(addr, val),
             0xFF80..=0xFFFE => self.hram.write(addr, val),
             _ => (),

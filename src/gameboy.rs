@@ -2,12 +2,12 @@ mod cartridge;
 mod cpu;
 mod peripherals;
 
-pub use peripherals::Bootrom;
-
+pub use self::cartridge::Cartridge;
+use self::cpu::Cpu;
+pub use self::peripherals::Bootrom;
+use self::peripherals::Peripherals;
+use ::sdl2::{Sdl, event::Event};
 use ::std::time;
-use cpu::Cpu;
-use peripherals::Peripherals;
-use sdl2::{Sdl, event::Event};
 
 const CPU_CLOCK_HZ: u128 = 4_194_304;
 const M_CYCLE_CLOCK: u128 = 4;
@@ -20,10 +20,10 @@ pub struct GameBoy {
 }
 
 impl GameBoy {
-    pub fn new(bootrom: Bootrom) -> Self {
+    pub fn new(bootrom: Bootrom, cartridge: Cartridge) -> Self {
         let cpu = Cpu::new();
         let sdl = sdl2::init().expect("failed to initialize SDL");
-        let peripherals = Peripherals::new(bootrom, &sdl);
+        let peripherals = Peripherals::new(bootrom, cartridge, &sdl);
         Self {
             cpu,
             sdl,

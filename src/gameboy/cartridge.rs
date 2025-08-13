@@ -1,3 +1,5 @@
+use super::peripherals::mbc::Mbc;
+
 #[repr(C)]
 pub struct CartridgeHeader {
     entry_point: [u8; 4],
@@ -24,7 +26,10 @@ impl CartridgeHeader {
         for i in 0x34..=0x4c {
             checksum = checksum.wrapping_sub(data[i]).wrapping_sub(1);
         }
-        assert!(checksum == ret.header_checksum[0], "Checksum validation failed.");
+        assert!(
+            checksum == ret.header_checksum[0],
+            "Checksum validation failed."
+        );
         ret
     }
 
@@ -46,6 +51,86 @@ impl CartridgeHeader {
             0x04 => 0x20000,
             0x05 => 0x10000,
             _ => panic!("Invalid sram size {}.", self.sram_size[0]),
+        }
+    }
+}
+
+pub struct Cartridge {
+    rom: Box<[u8]>,
+    sram: Box<[u8]>,
+    mbc: Mbc,
+}
+
+impl Cartridge {
+    pub fn new(rom: Box<[u8]>) -> Self {
+        let header = CartridgeHeader::new(rom[0x100..0x150].try_into().unwrap());
+        let title = str::from_utf8(&header.title)
+            .unwrap()
+            .trim_end_matches('\0')
+            .to_string();
+        let rom_size = header.rom_size();
+        let sram_size = header.sram_size();
+        let rom_banks = rom_size >> 14;
+        let mbc = Mbc::new(header.cartridge_type[0], rom_banks);
+
+        println!(
+            "Cartridge info {{ title: {}, type: {}, rom_size: {} B, sram_size: {} B }}",
+            title,
+            match mbc {
+                Mbc::NoMbc => "No MBC",
+                Mbc::Mbc1 { .. } => "MBC1",
+            },
+            rom_size,
+            sram_size,
+        );
+
+        assert!(
+            rom.len() == rom_size,
+            "Expected {} bytes of cartridge ROM, got {}",
+            rom_size,
+            rom.len()
+        );
+
+        Self {
+            rom,
+            sram: vec![0; sram_size].into(),
+            mbc,
+        }
+    }
+
+    pub fn read(&self, addr: u16) -> u8 {
+        match addr {
+            0x0000..=0x7FFF => self.rom[self.mbc.get_addr(addr) & (self.rom.len() - 1)],
+            0xA000..=0xBFFF => match self.mbc {
+                Mbc::NoMbc => self.sram[addr as usize & (self.sram.len() - 1)],
+                Mbc::Mbc1 {
+                    ref sram_enable, ..
+                } => {
+                    if *sram_enable {
+                        self.sram[self.mbc.get_addr(addr) & (self.sram.len() - 1)]
+                    } else {
+                        0xFF
+                    }
+                }
+            },
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn write(&mut self, addr: u16, val: u8) {
+        match addr {
+            0x0000..=0x7FFF => self.mbc.write(addr, val),
+            0xA000..=0xBFFF => match self.mbc {
+                Mbc::NoMbc => self.sram[addr as usize & (self.sram.len() - 1)] = val,
+                Mbc::Mbc1 {
+                    ref sram_enable, ..
+                } => {
+                    if *sram_enable {
+                        self.sram[self.mbc.get_addr(addr) & (self.sram.len() - 1)] = val;
+                    }
+                }
+            },
+            _ => unreachable!(),
         }
     }
 }

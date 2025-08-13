@@ -1,5 +1,3 @@
-use crate::gameboy::cartridge;
-
 pub enum Mbc {
     NoMbc,
     Mbc1 {
