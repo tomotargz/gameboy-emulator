@@ -1,5 +1,6 @@
 mod bootrom;
 mod hram;
+mod mbc;
 mod ppu;
 mod wram;
 
