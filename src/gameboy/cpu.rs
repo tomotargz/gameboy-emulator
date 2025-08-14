@@ -13,8 +13,16 @@ struct Ctx {
     cb: bool,
 }
 
+#[derive(Default)]
+pub struct Interrupts {
+    pub ime: bool,
+    pub int_flags: u8,
+    pub int_enable: u8,
+}
+
 pub struct Cpu {
     regs: Registers,
+    pub interrupts: Interrupts,
     ctx: Ctx,
 }
 
@@ -22,6 +30,7 @@ impl Cpu {
     pub fn new() -> Self {
         Cpu {
             regs: Registers::default(),
+            interrupts: Interrupts::default(),
             ctx: Ctx::default(),
         }
     }
@@ -211,7 +220,7 @@ impl Cpu {
             // 0xd6
             // 0xd7
             // 0xd8
-            // 0xd9
+            0xd9 => self.reti(bus),
             // 0xda
             // 0xdb
             // 0xdc
@@ -237,7 +246,7 @@ impl Cpu {
             0xf0 => self.ld(bus, Reg8::A, Direct8::DFF),
             0xf1 => self.pop(bus, Reg16::AF),
             0xf2 => self.ld(bus, Reg8::A, Indirect::CFF),
-            // 0xf3
+            0xf3 => self.di(bus),
             // 0xf4
             0xf5 => self.push(bus, Reg16::AF),
             // 0xf6
@@ -245,7 +254,7 @@ impl Cpu {
             // 0xf8
             // 0xf9
             0xfa => self.ld(bus, Reg8::A, Direct8::D),
-            // 0xfb
+            0xfb => self.ei(bus),
             // 0xfc
             // 0xfd
             0xfe => self.cp(bus, Imm8),

@@ -334,4 +334,28 @@ impl Cpu {
             },
         });
     }
+
+    pub fn reti(&mut self, bus: &Peripherals) {
+        step!((), {
+            0: if let Some(v) = self.pop16(bus) {
+                self.regs.pc = v;
+                return go!(1);
+            },
+            1: {
+                self.interrupts.ime = true;
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn ei(&mut self, bus: &Peripherals) {
+        self.fetch(bus);
+        self.interrupts.ime = true;
+    }
+
+    pub fn di(&mut self, bus: &Peripherals) {
+        self.interrupts.ime = false;
+        self.fetch(bus);
+    }
 }
