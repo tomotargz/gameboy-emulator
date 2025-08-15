@@ -1,23 +1,20 @@
 mod instructions;
+pub mod interrupts;
 mod operand;
 mod registers;
 
-use operand::{Cond, Direct8, Direct16, Imm8, Imm16, Indirect, Reg8, Reg16};
-
+use self::instructions::{go, step};
+use self::interrupts::{Interrupts, JOYPAD, SERIAL, STAT, TIMER, VBLANK};
+use self::operand::{Cond, Direct8, Direct16, Imm8, Imm16, Indirect, Reg8, Reg16};
 use self::registers::Registers;
 use super::peripherals::Peripherals;
+use ::std::sync::atomic::{AtomicU8, AtomicU16, Ordering::Relaxed};
 
 #[derive(Default)]
 struct Ctx {
     opcode: u8,
     cb: bool,
-}
-
-#[derive(Default)]
-pub struct Interrupts {
-    pub ime: bool,
-    pub int_flags: u8,
-    pub int_enable: u8,
+    int: bool,
 }
 
 pub struct Cpu {
@@ -36,12 +33,22 @@ impl Cpu {
     }
 
     pub fn emulate_cycle(&mut self, bus: &mut Peripherals) {
+        if self.ctx.int {
+            self.call_isr(bus);
+            return;
+        }
         self.decode(bus);
     }
 
+    // todo: もっとわかりやすく
     pub fn fetch(&mut self, bus: &Peripherals) {
-        self.ctx.opcode = bus.read(self.regs.pc);
-        self.regs.pc = self.regs.pc.wrapping_add(1);
+        self.ctx.opcode = bus.read(self.regs.pc); // 割り込み時もreadする必要がある？
+        if self.interrupts.ime && self.interrupts.get_interrupts() > 0 {
+            self.ctx.int = true;
+        } else {
+            self.regs.pc = self.regs.pc.wrapping_add(1);
+            self.ctx.int = false;
+        }
         self.ctx.cb = false;
     }
 
@@ -347,5 +354,28 @@ impl Cpu {
             0x7f => self.bit(bus, 7, Reg8::A),
             _ => panic!("Not implemented: cb{:02x}", self.ctx.opcode),
         }
+    }
+
+    fn call_isr(&mut self, bus: &mut Peripherals) {
+        step!((), {
+            0: if let Some(_) = self.push16(bus, self.regs.pc) {
+                let highest_int: u8 = 1 << self.interrupts.get_interrupts().trailing_zeros();
+                self.interrupts.int_flags &= !highest_int;
+                self.regs.pc = match highest_int {
+                    VBLANK => 0x0040,
+                    STAT => 0x0048,
+                    TIMER => 0x0050,
+                    SERIAL => 0x0058,
+                    JOYPAD => 0x0060,
+                    _ => panic!("Invalid interrupt: {:02x}", highest_int),
+                };
+                return go!(1);
+            },
+            1: {
+                self.interrupts.ime = false;
+                go!(0);
+                self.fetch(bus)
+            },
+        });
     }
 }

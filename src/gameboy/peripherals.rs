@@ -4,12 +4,13 @@ pub mod mbc;
 mod ppu;
 mod wram;
 
+pub use self::bootrom::Bootrom;
+use self::hram::HRam;
+use self::ppu::Ppu;
+use self::wram::WRam;
 use super::cartridge::Cartridge;
+use super::cpu::interrupts::Interrupts;
 use ::sdl2::Sdl;
-pub use bootrom::Bootrom;
-use hram::HRam;
-use ppu::Ppu;
-use wram::WRam;
 
 pub struct Peripherals {
     bootrom: Bootrom,
@@ -17,6 +18,7 @@ pub struct Peripherals {
     hram: HRam,
     pub ppu: Ppu,
     cartridge: Cartridge,
+    interrupts: Interrupts,
 }
 
 impl Peripherals {
@@ -27,6 +29,7 @@ impl Peripherals {
             hram: HRam::new(),
             ppu: Ppu::new(sdl),
             cartridge,
+            interrupts: Interrupts::default(),
         }
     }
 
@@ -44,8 +47,10 @@ impl Peripherals {
             0xA000..=0xBFFF => self.cartridge.read(addr),
             0xC000..=0xFDFF => self.wram.read(addr),
             0xFE00..=0xFE9F => self.ppu.read(addr),
+            0xFF0F => self.interrupts.read(addr),
             0xFF40..=0xFF4B => self.ppu.read(addr),
-            0xFF80..=0xFFFF => self.hram.read(addr),
+            0xFF80..=0xFFFE => self.hram.read(addr),
+            0xFFFF => self.interrupts.read(addr),
             _ => 0xFF,
         }
     }
@@ -62,9 +67,11 @@ impl Peripherals {
             0xA000..=0xBFFF => self.cartridge.write(addr, val),
             0xC000..=0xFDFF => self.wram.write(addr, val),
             0xFE00..=0xFE9F => self.ppu.write(addr, val),
+            0xFF0F => self.interrupts.write(addr, val),
             0xFF40..=0xFF4B => self.ppu.write(addr, val),
             0xFF50 => self.bootrom.write(addr, val),
             0xFF80..=0xFFFE => self.hram.write(addr, val),
+            0xFFFF => self.interrupts.write(addr, val),
             _ => (),
         }
     }
