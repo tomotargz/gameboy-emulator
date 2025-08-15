@@ -176,7 +176,7 @@ impl Cpu {
             0x73 => self.ld(bus, Indirect::HL, Reg8::E),
             0x74 => self.ld(bus, Indirect::HL, Reg8::H),
             0x75 => self.ld(bus, Indirect::HL, Reg8::L),
-            // 0x76
+            0x76 => self.halt(bus),
             0x77 => self.ld(bus, Indirect::HL, Reg8::A),
             0x78 => self.ld(bus, Reg8::A, Reg8::B),
             0x79 => self.ld(bus, Reg8::A, Reg8::C),
