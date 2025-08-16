@@ -194,14 +194,14 @@ impl Cpu {
             0x85 => self.add(bus, Reg8::L),
             0x86 => self.add(bus, Indirect::HL),
             0x87 => self.add(bus, Reg8::A),
-            // 0x88
-            // 0x89
-            // 0x8a
-            // 0x8b
-            // 0x8c
-            // 0x8d
-            // 0x8e
-            // 0x8f
+            0x88 => self.adc(bus, Reg8::B),
+            0x89 => self.adc(bus, Reg8::C),
+            0x8a => self.adc(bus, Reg8::D),
+            0x8b => self.adc(bus, Reg8::E),
+            0x8c => self.adc(bus, Reg8::H),
+            0x8d => self.adc(bus, Reg8::L),
+            0x8e => self.adc(bus, Indirect::HL),
+            0x8f => self.adc(bus, Reg8::A),
             // 0xb0
             // 0xb1
             // 0xb2

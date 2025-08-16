@@ -396,4 +396,22 @@ impl Cpu {
             },
         });
     }
+
+    pub fn adc<S: Copy>(&mut self, bus: &Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                let cf = self.regs.cf() as u8;
+                let result = self.regs.a.wrapping_add(v).wrapping_add(cf);
+                self.regs.set_zf(result == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf((self.regs.a & 0xf) + (v & 0xf) + (cf & 0xf) > 0xf);
+                self.regs.set_cf(self.regs.a as u16 + v as u16 + cf as u16 > 0xff);
+                self.regs.a = result;
+                self.fetch(bus);
+            },
+        });
+    }
 }
