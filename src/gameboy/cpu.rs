@@ -202,6 +202,14 @@ impl Cpu {
             0x8d => self.adc(bus, Reg8::L),
             0x8e => self.adc(bus, Indirect::HL),
             0x8f => self.adc(bus, Reg8::A),
+            0x90 => self.sub(bus, Reg8::B),
+            0x91 => self.sub(bus, Reg8::C),
+            0x92 => self.sub(bus, Reg8::D),
+            0x93 => self.sub(bus, Reg8::E),
+            0x94 => self.sub(bus, Reg8::H),
+            0x95 => self.sub(bus, Reg8::L),
+            0x96 => self.sub(bus, Indirect::HL),
+            0x97 => self.sub(bus, Reg8::A),
             // 0xb0
             // 0xb1
             // 0xb2
