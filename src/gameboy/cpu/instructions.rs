@@ -461,6 +461,7 @@ impl Cpu {
                 self.regs.set_nf(false);
                 self.regs.set_hf(true);
                 self.regs.set_cf(false);
+                self.fetch(bus);
             },
         });
     }
@@ -476,6 +477,7 @@ impl Cpu {
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
                 self.regs.set_cf(false);
+                self.fetch(bus);
             },
         });
     }
@@ -491,6 +493,106 @@ impl Cpu {
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
                 self.regs.set_cf(false);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn rlca(&mut self, bus: &Peripherals) {
+        self.regs.set_zf(false);
+        self.regs.set_nf(false);
+        self.regs.set_hf(false);
+        self.regs.set_cf(self.regs.a >> 7 == 1);
+        self.regs.a = self.regs.a.rotate_left(1);
+        self.fetch(bus);
+    }
+
+    pub fn rla(&mut self, bus: &Peripherals) {
+        self.regs.set_zf(false);
+        self.regs.set_nf(false);
+        self.regs.set_hf(false);
+        self.regs.set_cf(self.regs.a >> 7 == 1);
+        self.regs.a = (self.regs.a << 1) + self.regs.cf() as u8;
+        self.fetch(bus);
+    }
+
+    pub fn rrca(&mut self, bus: &Peripherals) {
+        self.regs.set_zf(false);
+        self.regs.set_nf(false);
+        self.regs.set_hf(false);
+        self.regs.set_cf(self.regs.a & 0x01 == 1);
+        self.regs.a = self.regs.a.rotate_right(1);
+        self.fetch(bus);
+    }
+
+    pub fn rra(&mut self, bus: &Peripherals) {
+        self.regs.set_zf(false);
+        self.regs.set_nf(false);
+        self.regs.set_hf(false);
+        self.regs.set_cf(self.regs.a & 0x01 == 1);
+        self.regs.a = (self.regs.a >> 1) + ((self.regs.cf() as u8) << 7);
+        self.fetch(bus);
+    }
+
+    pub fn rlc<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                VAL8.store(v, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed).rotate_left(1)).is_some() {
+                let val = VAL8.load(Relaxed);
+                self.regs.set_zf(val == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(val >> 7 == 1);
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn rrc<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                VAL8.store(v, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed).rotate_right(1)).is_some() {
+                let val = VAL8.load(Relaxed);
+                self.regs.set_zf(val == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(val & 0x01 == 1);
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn rr<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                let result = (v >> 1) | ((self.regs.cf() as u8) << 7);
+                self.regs.set_zf(result == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(v & 0x01 == 1);
+                VAL8.store(result, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
+                go!(0);
+                self.fetch(bus);
             },
         });
     }
