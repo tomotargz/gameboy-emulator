@@ -217,15 +217,30 @@ impl Cpu {
             0x9c => self.sbc(bus, Reg8::H),
             0x9d => self.sbc(bus, Reg8::L),
             0x9e => self.sbc(bus, Indirect::HL),
-            0x9f => self.sbc(bus, Reg8::A),
-            // 0xb0
-            // 0xb1
-            // 0xb2
-            // 0xb3
-            // 0xb4
-            // 0xb5
-            // 0xb6
-            // 0xb7
+            0xa0 => self.and(bus, Reg8::B),
+            0xa1 => self.and(bus, Reg8::C),
+            0xa2 => self.and(bus, Reg8::D),
+            0xa3 => self.and(bus, Reg8::E),
+            0xa4 => self.and(bus, Reg8::H),
+            0xa5 => self.and(bus, Reg8::L),
+            0xa6 => self.and(bus, Indirect::HL),
+            0xa7 => self.and(bus, Reg8::A),
+            0xa8 => self.xor(bus, Reg8::B),
+            0xa9 => self.xor(bus, Reg8::C),
+            0xaa => self.xor(bus, Reg8::D),
+            0xab => self.xor(bus, Reg8::E),
+            0xac => self.xor(bus, Reg8::H),
+            0xad => self.xor(bus, Reg8::L),
+            0xae => self.xor(bus, Indirect::HL),
+            0xaf => self.xor(bus, Reg8::A),
+            0xb0 => self.or(bus, Reg8::B),
+            0xb1 => self.or(bus, Reg8::C),
+            0xb2 => self.or(bus, Reg8::D),
+            0xb3 => self.or(bus, Reg8::E),
+            0xb4 => self.or(bus, Reg8::H),
+            0xb5 => self.or(bus, Reg8::L),
+            0xb6 => self.or(bus, Indirect::HL),
+            0xb7 => self.or(bus, Reg8::A),
             0xb8 => self.cp(bus, Reg8::B),
             0xb9 => self.cp(bus, Reg8::C),
             0xba => self.cp(bus, Reg8::D),

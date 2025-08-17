@@ -449,4 +449,49 @@ impl Cpu {
             },
         });
     }
+
+    pub fn and<S: Copy>(&mut self, bus: &Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                self.regs.a = self.regs.a & v;
+                self.regs.set_zf(self.regs.a == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(true);
+                self.regs.set_cf(false);
+            },
+        });
+    }
+
+    pub fn or<S: Copy>(&mut self, bus: &Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                self.regs.a = self.regs.a | v;
+                self.regs.set_zf(self.regs.a == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(false);
+            },
+        });
+    }
+
+    pub fn xor<S: Copy>(&mut self, bus: &Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                self.regs.a = self.regs.a ^ v;
+                self.regs.set_zf(self.regs.a == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(false);
+            },
+        });
+    }
 }
