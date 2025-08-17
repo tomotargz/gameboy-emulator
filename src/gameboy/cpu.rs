@@ -209,7 +209,15 @@ impl Cpu {
             0x94 => self.sub(bus, Reg8::H),
             0x95 => self.sub(bus, Reg8::L),
             0x96 => self.sub(bus, Indirect::HL),
-            0x97 => self.sub(bus, Reg8::A),
+            0x97 => self.sbc(bus, Reg8::A),
+            0x98 => self.sbc(bus, Reg8::B),
+            0x99 => self.sbc(bus, Reg8::C),
+            0x9a => self.sbc(bus, Reg8::D),
+            0x9b => self.sbc(bus, Reg8::E),
+            0x9c => self.sbc(bus, Reg8::H),
+            0x9d => self.sbc(bus, Reg8::L),
+            0x9e => self.sbc(bus, Indirect::HL),
+            0x9f => self.sbc(bus, Reg8::A),
             // 0xb0
             // 0xb1
             // 0xb2
