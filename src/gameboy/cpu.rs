@@ -351,7 +351,6 @@ impl Cpu {
             0x1d => self.rr(bus, Reg8::L),
             0x1e => self.rr(bus, Indirect::HL),
             0x1f => self.rr(bus, Reg8::A),
-
             0x20 => self.sla(bus, Reg8::B),
             0x21 => self.sla(bus, Reg8::C),
             0x22 => self.sla(bus, Reg8::D),
@@ -368,7 +367,14 @@ impl Cpu {
             0x2d => self.sra(bus, Reg8::L),
             0x2e => self.sra(bus, Indirect::HL),
             0x2f => self.sra(bus, Reg8::A),
-
+            0x30 => self.swap(bus, Reg8::B),
+            0x31 => self.swap(bus, Reg8::C),
+            0x32 => self.swap(bus, Reg8::D),
+            0x33 => self.swap(bus, Reg8::E),
+            0x34 => self.swap(bus, Reg8::H),
+            0x35 => self.swap(bus, Reg8::L),
+            0x36 => self.swap(bus, Indirect::HL),
+            0x37 => self.swap(bus, Reg8::A),
             0x38 => self.srl(bus, Reg8::B),
             0x39 => self.srl(bus, Reg8::C),
             0x3a => self.srl(bus, Reg8::D),
