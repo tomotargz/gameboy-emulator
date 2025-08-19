@@ -772,4 +772,9 @@ impl Cpu {
             self.fetch(bus);
         }
     }
+
+    pub fn stop(&mut self, bus: &Peripherals) {
+        // 実装を省略
+        self.fetch(bus);
+    }
 }

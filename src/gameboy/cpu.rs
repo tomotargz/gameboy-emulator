@@ -74,7 +74,7 @@ impl Cpu {
             0x0d => self.dec(bus, Reg8::C),
             0x0e => self.ld(bus, Reg8::C, Imm8),
             0x0f => self.rrca(bus),
-            // 0x10
+            0x10 => self.stop(bus),
             0x11 => self.ld16(bus, Reg16::DE, Imm16),
             0x12 => self.ld(bus, Indirect::DE, Reg8::A),
             0x13 => self.inc16(bus, Reg16::DE),
