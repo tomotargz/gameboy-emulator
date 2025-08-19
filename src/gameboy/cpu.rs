@@ -256,7 +256,7 @@ impl Cpu {
             0xc4 => self.callc(bus, Cond::NZ),
             0xc5 => self.push(bus, Reg16::BC),
             // 0xc6
-            // 0xc7
+            0xc7 => self.rst(bus, 0x00),
             0xc8 => self.retc(bus, Cond::Z),
             0xc9 => self.ret(bus),
             0xca => self.jpc(bus, Cond::Z),
@@ -264,7 +264,7 @@ impl Cpu {
             0xcc => self.callc(bus, Cond::Z),
             0xcd => self.call(bus),
             // 0xce
-            // 0xcf
+            0xcf => self.rst(bus, 0x08),
             0xd0 => self.retc(bus, Cond::NC),
             0xd1 => self.pop(bus, Reg16::DE),
             0xd2 => self.jpc(bus, Cond::NC),
@@ -272,7 +272,7 @@ impl Cpu {
             0xd4 => self.callc(bus, Cond::NC),
             0xd5 => self.push(bus, Reg16::DE),
             // 0xd6
-            // 0xd7
+            0xd7 => self.rst(bus, 0x10),
             0xd8 => self.retc(bus, Cond::C),
             0xd9 => self.reti(bus),
             0xda => self.jpc(bus, Cond::C),
@@ -280,7 +280,7 @@ impl Cpu {
             0xdc => self.callc(bus, Cond::C),
             // 0xdd
             // 0xde
-            // 0xdf
+            0xdf => self.rst(bus, 0x18),
             0xe0 => self.ld(bus, Direct8::DFF, Reg8::A),
             0xe1 => self.pop(bus, Reg16::HL),
             0xe2 => self.ld(bus, Indirect::CFF, Reg8::A),
@@ -288,7 +288,7 @@ impl Cpu {
             // 0xe4
             0xe5 => self.push(bus, Reg16::HL),
             // 0xe6
-            // 0xe7
+            0xe7 => self.rst(bus, 0x20),
             // 0xe8
             0xe9 => self.jphl(bus),
             0xea => self.ld(bus, Direct8::D, Reg8::A),
@@ -296,7 +296,7 @@ impl Cpu {
             // 0xec
             // 0xed
             // 0xee
-            // 0xef
+            0xef => self.rst(bus, 0x28),
             0xf0 => self.ld(bus, Reg8::A, Direct8::DFF),
             0xf1 => self.pop(bus, Reg16::AF),
             0xf2 => self.ld(bus, Reg8::A, Indirect::CFF),
@@ -304,7 +304,7 @@ impl Cpu {
             // 0xf4
             0xf5 => self.push(bus, Reg16::AF),
             // 0xf6
-            // 0xf7
+            0xf7 => self.rst(bus, 0x30),
             // 0xf8
             // 0xf9
             0xfa => self.ld(bus, Reg8::A, Direct8::D),
@@ -312,7 +312,7 @@ impl Cpu {
             // 0xfc
             // 0xfd
             0xfe => self.cp(bus, Imm8),
-            // 0xff
+            0xff => self.rst(bus, 0x38),
             _ => panic!("Not implemented: {:02x}", self.ctx.opcode),
         }
     }

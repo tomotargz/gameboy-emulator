@@ -765,4 +765,11 @@ impl Cpu {
             },
         });
     }
+
+    pub fn rst(&mut self, bus: &mut Peripherals, addr: u16) {
+        if self.push16(bus, self.regs.pc).is_some() {
+            self.regs.pc = addr;
+            self.fetch(bus);
+        }
+    }
 }
