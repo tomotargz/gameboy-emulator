@@ -596,4 +596,67 @@ impl Cpu {
             },
         });
     }
+
+    pub fn sla<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                let result = v.rotate_left(1);
+                self.regs.set_zf(result == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(v >> 7 == 1);
+                VAL8.store(result, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn sra<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                let result = (v & 0x8) + v.rotate_right(1);
+                self.regs.set_zf(result == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(v & 0x01 == 1);
+                VAL8.store(result, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn srl<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                let result = v.rotate_right(1);
+                self.regs.set_zf(result == 0);
+                self.regs.set_nf(false);
+                self.regs.set_hf(false);
+                self.regs.set_cf(v & 0x01 == 1);
+                VAL8.store(result, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
 }

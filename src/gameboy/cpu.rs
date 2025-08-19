@@ -351,14 +351,33 @@ impl Cpu {
             0x1d => self.rr(bus, Reg8::L),
             0x1e => self.rr(bus, Indirect::HL),
             0x1f => self.rr(bus, Reg8::A),
-            // 0x18
-            // 0x19
-            // 0x1a
-            // 0x1b
-            // 0x1c
-            // 0x1d
-            // 0x1e
-            // 0x1f
+
+            0x20 => self.sla(bus, Reg8::B),
+            0x21 => self.sla(bus, Reg8::C),
+            0x22 => self.sla(bus, Reg8::D),
+            0x23 => self.sla(bus, Reg8::E),
+            0x24 => self.sla(bus, Reg8::H),
+            0x25 => self.sla(bus, Reg8::L),
+            0x26 => self.sla(bus, Indirect::HL),
+            0x27 => self.sla(bus, Reg8::A),
+            0x28 => self.sra(bus, Reg8::B),
+            0x29 => self.sra(bus, Reg8::C),
+            0x2a => self.sra(bus, Reg8::D),
+            0x2b => self.sra(bus, Reg8::E),
+            0x2c => self.sra(bus, Reg8::H),
+            0x2d => self.sra(bus, Reg8::L),
+            0x2e => self.sra(bus, Indirect::HL),
+            0x2f => self.sra(bus, Reg8::A),
+
+            0x38 => self.srl(bus, Reg8::B),
+            0x39 => self.srl(bus, Reg8::C),
+            0x3a => self.srl(bus, Reg8::D),
+            0x3b => self.srl(bus, Reg8::E),
+            0x3c => self.srl(bus, Reg8::H),
+            0x3d => self.srl(bus, Reg8::L),
+            0x3e => self.srl(bus, Indirect::HL),
+            0x3f => self.srl(bus, Reg8::A),
+
             0x40 => self.bit(bus, 0, Reg8::B),
             0x41 => self.bit(bus, 0, Reg8::C),
             0x42 => self.bit(bus, 0, Reg8::D),
