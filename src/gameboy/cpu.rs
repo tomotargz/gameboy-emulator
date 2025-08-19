@@ -251,15 +251,15 @@ impl Cpu {
             0xbf => self.cp(bus, Reg8::A),
             // 0xc0
             0xc1 => self.pop(bus, Reg16::BC),
-            // 0xc2
-            // 0xc3
+            0xc2 => self.jpc(bus, Cond::NZ),
+            0xc3 => self.jp(bus),
             // 0xc4
             0xc5 => self.push(bus, Reg16::BC),
             // 0xc6
             // 0xc7
             // 0xc8
             0xc9 => self.ret(bus),
-            // 0xca
+            0xca => self.jpc(bus, Cond::Z),
             0xcb => self.cb_prefixed(bus),
             // 0xcc
             0xcd => self.call(bus),
@@ -267,7 +267,7 @@ impl Cpu {
             // 0xcf
             // 0xd0
             0xd1 => self.pop(bus, Reg16::DE),
-            // 0xd2
+            0xd2 => self.jpc(bus, Cond::NC),
             // 0xd3
             // 0xd4
             0xd5 => self.push(bus, Reg16::DE),
@@ -275,7 +275,7 @@ impl Cpu {
             // 0xd7
             // 0xd8
             0xd9 => self.reti(bus),
-            // 0xda
+            0xda => self.jpc(bus, Cond::C),
             // 0xdb
             // 0xdc
             // 0xdd
@@ -290,7 +290,7 @@ impl Cpu {
             // 0xe6
             // 0xe7
             // 0xe8
-            // 0xe9
+            0xe9 => self.jphl(bus),
             0xea => self.ld(bus, Direct8::D, Reg8::A),
             // 0xeb
             // 0xec

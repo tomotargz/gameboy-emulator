@@ -693,4 +693,41 @@ impl Cpu {
             },
         });
     }
+
+    pub fn jp(&mut self, bus: &Peripherals) {
+        step!((), {
+           0: if let Some(v) = self.read16(bus, Imm16) {
+               self.regs.pc = v;
+               go!(1);
+               return;
+           },
+           1: {
+               go!(0);
+               self.fetch(bus);
+           },
+        });
+    }
+
+    pub fn jphl(&mut self, bus: &Peripherals) {
+        self.regs.pc = self.regs.hl();
+        self.fetch(bus);
+    }
+
+    pub fn jpc(&mut self, bus: &Peripherals, c: Cond) {
+        step!((), {
+           0: if let Some(v) = self.read16(bus, Imm16) {
+               if !self.cond(c) {
+                   self.fetch(bus);
+                   return;
+               }
+               self.regs.pc = v;
+               go!(1);
+               return;
+           },
+           1: {
+               go!(0);
+               self.fetch(bus);
+           },
+        });
+    }
 }
