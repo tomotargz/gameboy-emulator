@@ -748,4 +748,21 @@ impl Cpu {
             },
         });
     }
+
+    pub fn retc(&mut self, bus: &Peripherals, c: Cond) {
+        step!((), {
+            0: if let Some(v) = self.pop16(bus) {
+                if !self.cond(c) {
+                    self.fetch(bus);
+                    return;
+                }
+                self.regs.pc = v;
+                return go!(1);
+            },
+            1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
 }
