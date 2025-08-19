@@ -659,4 +659,21 @@ impl Cpu {
             },
         });
     }
+
+    pub fn set<S: Copy>(&mut self, bus: &mut Peripherals, num: u8, src: S)
+    where
+        Self: IO8<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, src) {
+                let result = v | (1 << num);
+                VAL8.store(result, Relaxed);
+                go!(1);
+            },
+            1: if self.write8(bus, src, VAL8.load(Relaxed)).is_some() {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
 }
