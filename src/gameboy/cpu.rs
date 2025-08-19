@@ -113,7 +113,7 @@ impl Cpu {
             0x34 => self.inc16(bus, Reg16::HL),
             0x35 => self.dec16(bus, Reg16::HL),
             0x36 => self.ld16(bus, Reg16::HL, Imm16),
-            // 0x37
+            0x37 => self.scf(bus),
             0x38 => self.jr_c(bus, Cond::C),
             // 0x39
             0x3a => self.ld(bus, Reg8::A, Indirect::HLD),
@@ -121,7 +121,7 @@ impl Cpu {
             0x3c => self.inc(bus, Reg8::A),
             0x3d => self.dec(bus, Reg8::A),
             0x3e => self.ld(bus, Reg8::A, Imm8),
-            // 0x3f
+            0x3f => self.ccf(bus),
             0x40 => self.ld(bus, Reg8::B, Reg8::B),
             0x41 => self.ld(bus, Reg8::B, Reg8::C),
             0x42 => self.ld(bus, Reg8::B, Reg8::D),

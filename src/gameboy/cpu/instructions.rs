@@ -798,4 +798,18 @@ impl Cpu {
             },
         });
     }
+
+    pub fn ccf(&mut self, bus: &Peripherals) {
+        self.regs.set_nf(false);
+        self.regs.set_hf(false);
+        self.regs.set_cf(!self.regs.cf());
+        self.fetch(bus);
+    }
+
+    pub fn scf(&mut self, bus: &Peripherals) {
+        self.regs.set_nf(false);
+        self.regs.set_hf(false);
+        self.regs.set_cf(true);
+        self.fetch(bus);
+    }
 }
