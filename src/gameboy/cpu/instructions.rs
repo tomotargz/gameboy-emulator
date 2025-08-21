@@ -858,7 +858,7 @@ impl Cpu {
     pub fn ldhlsp(&mut self, bus: &Peripherals) {
         step!((), {
             0: if let Some(v) = self.read8(bus, Imm8) {
-                self.regs.write_hl(self.regs.sp + v as i8 as u16);
+                self.regs.write_hl(self.regs.sp.wrapping_add(v as i8 as u16));
                 self.regs.set_zf(false);
                 self.regs.set_nf(false);
                 self.regs.set_hf(((self.regs.sp & 0x0f) + (v as i8 as u16 & 0x0f)) > 0x0f);
@@ -867,6 +867,49 @@ impl Cpu {
                 return;
             },
             1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn addhl<S: Copy>(&mut self, bus: &Peripherals, src: S)
+    where
+        Self: IO16<S>,
+    {
+        step!((), {
+            0: if let Some(v) = self.read16(bus, src) {
+                let (result, carry) = self.regs.hl().overflowing_add(v);
+                self.regs.set_nf(false);
+                self.regs.set_hf((self.regs.hl() & 0xfff) + (v & 0xfff) > 0xfff);
+                self.regs.set_cf(carry);
+                self.regs.write_hl(result);
+                go!(1);
+                return;
+            },
+            1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn addsp(&mut self, bus: &Peripherals) {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, Imm8) {
+                self.regs.set_zf(false);
+                self.regs.set_nf(false);
+                self.regs.set_hf((self.regs.sp & 0x0f) + (v as i8 as u16 & 0x0f) > 0x0f);
+                self.regs.set_cf((self.regs.sp & 0xff) + (v as i8 as u16 & 0xff) > 0xff);
+                self.regs.sp = self.regs.sp.wrapping_add(v as i8 as u16);
+                go!(1);
+                return;
+            },
+            1: {
+                go!(1);
+                self.fetch(bus);
+            },
+            2: {
                 go!(0);
                 self.fetch(bus);
             },
