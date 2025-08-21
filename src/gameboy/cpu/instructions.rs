@@ -833,4 +833,11 @@ impl Cpu {
         self.regs.set_cf(cf);
         self.fetch(bus);
     }
+
+    pub fn cpl(&mut self, bus: &Peripherals) {
+        self.regs.a = !self.regs.a;
+        self.regs.set_nf(true);
+        self.regs.set_hf(true);
+        self.fetch(bus);
+    }
 }
