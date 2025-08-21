@@ -305,8 +305,8 @@ impl Cpu {
             0xf5 => self.push(bus, Reg16::AF),
             // 0xf6
             0xf7 => self.rst(bus, 0x30),
-            // 0xf8
-            // 0xf9
+            0xf8 => self.ldhlsp(bus),
+            0xf9 => self.ldsphl(bus),
             0xfa => self.ld(bus, Reg8::A, Direct8::D),
             0xfb => self.ei(bus),
             // 0xfc

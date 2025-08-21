@@ -840,4 +840,36 @@ impl Cpu {
         self.regs.set_hf(true);
         self.fetch(bus);
     }
+
+    pub fn ldsphl(&mut self, bus: &Peripherals) {
+        step!((), {
+            0: {
+                self.regs.sp = self.regs.hl();
+                go!(1);
+                return;
+            },
+            1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
+
+    pub fn ldhlsp(&mut self, bus: &Peripherals) {
+        step!((), {
+            0: if let Some(v) = self.read8(bus, Imm8) {
+                self.regs.write_hl(self.regs.sp + v as i8 as u16);
+                self.regs.set_zf(false);
+                self.regs.set_nf(false);
+                self.regs.set_hf(((self.regs.sp & 0x0f) + (v as i8 as u16 & 0x0f)) > 0x0f);
+                self.regs.set_cf(((self.regs.sp & 0xff) + (v as i8 as u16 & 0xff)) > 0xff);
+                go!(1);
+                return;
+            },
+            1: {
+                go!(0);
+                self.fetch(bus);
+            },
+        });
+    }
 }
