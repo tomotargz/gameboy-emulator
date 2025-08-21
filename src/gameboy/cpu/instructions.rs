@@ -812,4 +812,25 @@ impl Cpu {
         self.regs.set_cf(true);
         self.fetch(bus);
     }
+
+    pub fn daa(&mut self, bus: &Peripherals) {
+        let mut correction = 0;
+        let mut cf = false;
+        if self.regs.cf() || (!self.regs.nf() && self.regs.a > 0x99) {
+            cf = true;
+            correction |= 0x60;
+        }
+        if self.regs.hf() || (!self.regs.nf() && (self.regs.a & 0x0f > 0x09)) {
+            correction |= 0x06;
+        }
+        if self.regs.nf() {
+            self.regs.a = self.regs.a.wrapping_sub(correction);
+        } else {
+            self.regs.a = self.regs.a.wrapping_add(correction);
+        }
+        self.regs.set_zf(self.regs.a == 0);
+        self.regs.set_hf(false);
+        self.regs.set_cf(cf);
+        self.fetch(bus);
+    }
 }

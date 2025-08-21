@@ -97,7 +97,7 @@ impl Cpu {
             0x24 => self.inc(bus, Reg8::H),
             0x25 => self.dec(bus, Reg8::H),
             0x26 => self.ld(bus, Reg8::H, Imm8),
-            // 0x27
+            0x27 => self.daa(bus),
             0x28 => self.jr_c(bus, Cond::Z),
             // 0x29
             0x2a => self.ld(bus, Reg8::A, Indirect::HLI),
