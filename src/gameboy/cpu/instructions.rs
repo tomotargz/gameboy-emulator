@@ -545,7 +545,8 @@ impl Cpu {
             },
             1: if self.write8(bus, src, VAL8.load(Relaxed).rotate_left(1)).is_some() {
                 let val = VAL8.load(Relaxed);
-                self.regs.set_zf(val == 0);
+                let result = val >> 7;
+                self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
                 self.regs.set_cf(val >> 7 == 1);
@@ -603,7 +604,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = v.rotate_left(1);
+                let result = v << 1;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -624,7 +625,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = (v & 0x8) + v.rotate_right(1);
+                let result = (v & 0x80) | (v >> 1);
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -645,7 +646,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = v.rotate_right(1);
+                let result = v >> 1;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -751,15 +752,20 @@ impl Cpu {
 
     pub fn retc(&mut self, bus: &Peripherals, c: Cond) {
         step!((), {
-            0: if let Some(v) = self.pop16(bus) {
-                if !self.cond(c) {
-                    self.fetch(bus);
-                    return;
+            0: {
+                if self.cond(c) {
+                    go!(1);
+                } else {
+                    go!(2);
                 }
-                self.regs.pc = v;
-                return go!(1);
+                return;
             },
-            1: {
+            1: if let Some(v) = self.pop16(bus) {
+                self.regs.pc = v;
+                go!(2);
+                return;
+            },
+            2: {
                 go!(0);
                 self.fetch(bus);
             },
@@ -773,9 +779,9 @@ impl Cpu {
         }
     }
 
-    pub fn stop(&mut self, bus: &Peripherals) {
+    pub fn stop(&mut self, _: &Peripherals) {
         // 実装を省略
-        self.fetch(bus);
+        panic!("stop called");
     }
 
     pub fn swap<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
@@ -906,8 +912,8 @@ impl Cpu {
                 return;
             },
             1: {
-                go!(1);
-                self.fetch(bus);
+                go!(2);
+                return;
             },
             2: {
                 go!(0);

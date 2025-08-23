@@ -19,6 +19,7 @@ pub struct Peripherals {
     pub ppu: Ppu,
     cartridge: Cartridge,
     interrupts: Interrupts,
+    // serial: char,
 }
 
 impl Peripherals {
@@ -30,6 +31,7 @@ impl Peripherals {
             ppu: Ppu::new(sdl),
             cartridge,
             interrupts: Interrupts::default(),
+            // serial: ' ',
         }
     }
 
@@ -72,6 +74,8 @@ impl Peripherals {
             0xFF50 => self.bootrom.write(addr, val),
             0xFF80..=0xFFFE => self.hram.write(addr, val),
             0xFFFF => self.interrupts.write(addr, val),
+            // 0xFF01 => self.serial = val as char,
+            // 0xFF02 => print!("{}", self.serial),
             _ => (),
         }
     }
