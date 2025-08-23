@@ -83,7 +83,7 @@ impl Cpu {
             let (result, carry) = self.regs.a.overflowing_sub(v);
             self.regs.set_zf(result == 0);
             self.regs.set_nf(true);
-            self.regs.set_hf((self.regs.a & 0xf) < (v & 0xf));
+            self.regs.set_hf(self.regs.a & 0xf < v & 0xf);
             self.regs.set_cf(carry);
             self.fetch(bus);
         }
@@ -210,14 +210,14 @@ impl Cpu {
             1 : {
                 let [lo, hi] = u16::to_le_bytes(val);
                 self.regs.sp = self.regs.sp.wrapping_sub(1);
-                bus.write(self.regs.sp, hi);
+                bus.write(&mut self.interrupts, self.regs.sp, hi);
                 VAL8.store(lo, Relaxed);
                 go!(2);
                 return None;
             },
             2: {
                 self.regs.sp = self.regs.sp.wrapping_sub(1);
-                bus.write(self.regs.sp, VAL8.load(Relaxed));
+                bus.write(&mut self.interrupts, self.regs.sp, VAL8.load(Relaxed));
                 go!(3);
                 return None;
             },
@@ -244,13 +244,13 @@ impl Cpu {
     pub fn pop16(&mut self, bus: &Peripherals) -> Option<u16> {
         step!(None, {
             0: {
-                VAL8.store(bus.read(self.regs.sp), Relaxed);
+                VAL8.store(bus.read(&self.interrupts, self.regs.sp), Relaxed);
                 self.regs.sp = self.regs.sp.wrapping_add(1);
                 go!(1);
                 return None;
             },
             1: {
-                let hi = bus.read(self.regs.sp);
+                let hi = bus.read(&self.interrupts, self.regs.sp);
                 self.regs.sp = self.regs.sp.wrapping_add(1);
                 VAL16.store(u16::from_le_bytes([VAL8.load(Relaxed), hi]), Relaxed);
                 go!(2);
@@ -508,11 +508,12 @@ impl Cpu {
     }
 
     pub fn rla(&mut self, bus: &Peripherals) {
+        let result = (self.regs.a << 1) + self.regs.cf() as u8;
         self.regs.set_zf(false);
         self.regs.set_nf(false);
         self.regs.set_hf(false);
         self.regs.set_cf(self.regs.a >> 7 == 1);
-        self.regs.a = (self.regs.a << 1) + self.regs.cf() as u8;
+        self.regs.a = result;
         self.fetch(bus);
     }
 
@@ -526,11 +527,12 @@ impl Cpu {
     }
 
     pub fn rra(&mut self, bus: &Peripherals) {
+        let result = (self.regs.a >> 1) + ((self.regs.cf() as u8) << 7);
         self.regs.set_zf(false);
         self.regs.set_nf(false);
         self.regs.set_hf(false);
         self.regs.set_cf(self.regs.a & 0x01 == 1);
-        self.regs.a = (self.regs.a >> 1) + ((self.regs.cf() as u8) << 7);
+        self.regs.a = result;
         self.fetch(bus);
     }
 
@@ -545,7 +547,8 @@ impl Cpu {
             },
             1: if self.write8(bus, src, VAL8.load(Relaxed).rotate_left(1)).is_some() {
                 let val = VAL8.load(Relaxed);
-                self.regs.set_zf(val == 0);
+                let result = val.rotate_left(1);
+                self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
                 self.regs.set_cf(val >> 7 == 1);
@@ -566,7 +569,8 @@ impl Cpu {
             },
             1: if self.write8(bus, src, VAL8.load(Relaxed).rotate_right(1)).is_some() {
                 let val = VAL8.load(Relaxed);
-                self.regs.set_zf(val == 0);
+                let result = val.rotate_right(1);
+                self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
                 self.regs.set_cf(val & 0x01 == 1);
@@ -582,7 +586,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = (v >> 1) | ((self.regs.cf() as u8) << 7);
+                let result = v >> 1 | (self.regs.cf() as u8) << 7;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -603,7 +607,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = v.rotate_left(1);
+                let result = v << 1;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -624,7 +628,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = (v & 0x8) + v.rotate_right(1);
+                let result = v & 0x80 | v >> 1;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -645,7 +649,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = v.rotate_right(1);
+                let result = v >> 1;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -751,15 +755,20 @@ impl Cpu {
 
     pub fn retc(&mut self, bus: &Peripherals, c: Cond) {
         step!((), {
-            0: if let Some(v) = self.pop16(bus) {
-                if !self.cond(c) {
-                    self.fetch(bus);
-                    return;
+            0: {
+                if self.cond(c) {
+                    go!(1);
+                } else {
+                    go!(2);
                 }
-                self.regs.pc = v;
-                return go!(1);
+                return;
             },
-            1: {
+            1: if let Some(v) = self.pop16(bus) {
+                self.regs.pc = v;
+                go!(2);
+                return;
+            },
+            2: {
                 go!(0);
                 self.fetch(bus);
             },
@@ -773,9 +782,9 @@ impl Cpu {
         }
     }
 
-    pub fn stop(&mut self, bus: &Peripherals) {
+    pub fn stop(&mut self, _: &Peripherals) {
         // 実装を省略
-        self.fetch(bus);
+        panic!("stop called");
     }
 
     pub fn swap<S: Copy>(&mut self, bus: &mut Peripherals, src: S)
@@ -784,7 +793,7 @@ impl Cpu {
     {
         step!((), {
             0: if let Some(v) = self.read8(bus, src) {
-                let result = (v >> 4) | (v << 4);
+                let result = v >> 4 | v << 4;
                 self.regs.set_zf(result == 0);
                 self.regs.set_nf(false);
                 self.regs.set_hf(false);
@@ -861,8 +870,8 @@ impl Cpu {
                 self.regs.write_hl(self.regs.sp.wrapping_add(v as i8 as u16));
                 self.regs.set_zf(false);
                 self.regs.set_nf(false);
-                self.regs.set_hf(((self.regs.sp & 0x0f) + (v as i8 as u16 & 0x0f)) > 0x0f);
-                self.regs.set_cf(((self.regs.sp & 0xff) + (v as i8 as u16 & 0xff)) > 0xff);
+                self.regs.set_hf((self.regs.sp & 0x0f) + (v as i8 as u16 & 0x0f) > 0x0f);
+                self.regs.set_cf((self.regs.sp & 0xff) + (v as i8 as u16 & 0xff) > 0xff);
                 go!(1);
                 return;
             },
@@ -906,8 +915,8 @@ impl Cpu {
                 return;
             },
             1: {
-                go!(1);
-                self.fetch(bus);
+                go!(2);
+                return;
             },
             2: {
                 go!(0);

@@ -98,12 +98,13 @@ impl Ppu {
             0xFF43 => self.scx,
             0xFF44 => self.ly,
             0xFF45 => self.lyc,
+            0xFF46 => 0xFF, // not implemented
             0xFF47 => self.bgp,
             0xFF48 => self.obp0,
             0xFF49 => self.obp1,
             0xFF4A => self.wy,
             0xFF4B => self.wx,
-            _ => unreachable!(),
+            _ => unreachable!("addr: {:04x}", addr),
         }
     }
 
@@ -232,7 +233,7 @@ impl Ppu {
     fn pixel_buffer(&self) -> Box<[u8]> {
         self.buffer
             .iter()
-            .flat_map(|&e| iter::repeat(e.into()).take(3))
+            .flat_map(|&e| [e, e, e])
             .collect::<Box<[u8]>>()
     }
 }

@@ -42,7 +42,7 @@ impl Cpu {
 
     // todo: もっとわかりやすく
     pub fn fetch(&mut self, bus: &Peripherals) {
-        self.ctx.opcode = bus.read(self.regs.pc); // 割り込み時もreadする必要がある？
+        self.ctx.opcode = bus.read(&self.interrupts, self.regs.pc); // 割り込み時もreadする必要がある？
         if self.interrupts.ime && self.interrupts.get_interrupts() > 0 {
             self.ctx.int = true;
         } else {
@@ -113,9 +113,9 @@ impl Cpu {
             0x31 => self.ld16(bus, Reg16::SP, Imm16),
             0x32 => self.ld(bus, Indirect::HLD, Reg8::A),
             0x33 => self.inc16(bus, Reg16::SP),
-            0x34 => self.inc16(bus, Reg16::HL),
-            0x35 => self.dec16(bus, Reg16::HL),
-            0x36 => self.ld16(bus, Reg16::HL, Imm16),
+            0x34 => self.inc(bus, Indirect::HL),
+            0x35 => self.dec(bus, Indirect::HL),
+            0x36 => self.ld(bus, Indirect::HL, Imm8),
             0x37 => self.scf(bus),
             0x38 => self.jr_c(bus, Cond::C),
             0x39 => self.addhl(bus, Reg16::SP),
@@ -218,7 +218,7 @@ impl Cpu {
             0x94 => self.sub(bus, Reg8::H),
             0x95 => self.sub(bus, Reg8::L),
             0x96 => self.sub(bus, Indirect::HL),
-            0x97 => self.sbc(bus, Reg8::A),
+            0x97 => self.sub(bus, Reg8::A),
             0x98 => self.sbc(bus, Reg8::B),
             0x99 => self.sbc(bus, Reg8::C),
             0x9a => self.sbc(bus, Reg8::D),
@@ -226,6 +226,7 @@ impl Cpu {
             0x9c => self.sbc(bus, Reg8::H),
             0x9d => self.sbc(bus, Reg8::L),
             0x9e => self.sbc(bus, Indirect::HL),
+            0x9f => self.sbc(bus, Reg8::A),
 
             0xa0 => self.and(bus, Reg8::B),
             0xa1 => self.and(bus, Reg8::C),

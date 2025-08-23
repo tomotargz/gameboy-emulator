@@ -10,6 +10,7 @@ impl Bootrom {
         self.active
     }
     pub fn write(&mut self, _: u16, val: u8) {
+        // println!("Bootrom:write {}", val);
         self.active = val == 0;
     }
     pub fn read(&self, addr: u16) -> u8 {

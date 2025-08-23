@@ -1,11 +1,13 @@
 mod cartridge;
 mod cpu;
 mod peripherals;
+mod timer;
 
 pub use self::cartridge::Cartridge;
 use self::cpu::Cpu;
 pub use self::peripherals::Bootrom;
 use self::peripherals::Peripherals;
+use self::timer::Timer;
 use ::sdl2::{Sdl, event::Event};
 use ::std::time;
 
@@ -45,6 +47,7 @@ impl GameBoy {
                     }
                 }
                 self.cpu.emulate_cycle(&mut self.peripherals);
+                self.peripherals.timer.emulate_cycle(&mut self.cpu.interrupts);
                 self.peripherals.ppu.emulate_cycle();
                 emulated += M_CYCLE_NANOS;
             }
