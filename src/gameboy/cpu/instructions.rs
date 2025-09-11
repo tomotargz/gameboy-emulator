@@ -360,24 +360,9 @@ impl Cpu {
     }
 
     pub fn halt(&mut self, bus: &Peripherals) {
-        // これだけで良いのでは？
-        // if self.interrupts.get_interrupts() > 0 {
-        //     self.fetch(bus);
-        // }
-
-        step!((), {
-            0: if self.interrupts.get_interrupts() > 0 {
-                self.fetch(bus);
-            } else {
-                return go!(1);
-            },
-            1: {
-                if self.interrupts.get_interrupts() > 0 {
-                    go!(0);
-                    self.fetch(bus);
-                }
-            },
-        });
+        if self.interrupts.get_interrupts() > 0 {
+            self.fetch(bus);
+        }
     }
 
     pub fn add<S: Copy>(&mut self, bus: &Peripherals, src: S)
